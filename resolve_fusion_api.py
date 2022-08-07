@@ -1,4 +1,3 @@
-from typing import Protocol
 from ss_backend.fake_fusion import Comp, Fusion, Tool
 
 # FAKE FUSION FOR TESTING
@@ -27,36 +26,6 @@ def find_first_missing(list: list[int]):
             first_missing = index
             break
     return first_missing
-
-
-class ResolveAPI(Protocol):
-    def refresh_global(self) -> None:
-        """Calls all necessary methods for when user changes settings."""
-        raise NotImplementedError()
-
-    def refresh_positions(self) -> None:
-        raise NotImplementedError()
-
-    def add_canvas(self, width: int, height: int) -> None:
-        raise NotImplementedError()
-
-    def add_screen(self) -> None:
-        raise NotImplementedError()
-
-    def delete_screen(self) -> None:
-        raise NotImplementedError()
-
-    def delete_all_screens(self) -> None:
-        raise NotImplementedError()
-
-    def set_inputs(self, tool: Tool, **kwargs) -> None:
-        raise NotImplementedError()
-
-    def set_inputs_canvas(self, width: int, height: int) -> None:
-        raise NotImplementedError()
-
-    def set_inputs_screen(self, merge: Tool, mask: Tool, **kwargs) -> None:
-        raise NotImplementedError()
 
 
 class ResolveFusionAPI:
