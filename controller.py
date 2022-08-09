@@ -17,10 +17,16 @@ class Controller:
         self.commands: dict[str, dict[str, function]] = {
             "width": {
                 "getter": self.grid.canvas._width_px,
-                "setter": self.grid.canvas.width,
+                "setter": self.grid.canvas.set_width,
             },
-            "height": self.set_height,
-            "margin": self.set_margin,
+            "height": {
+                "getter": self.grid.canvas._height_px,
+                "setter": self.grid.canvas.set_height,
+            },
+            "margin": {
+                "getter": self.grid.margin._all_px,
+                "setter": self.grid.margin.set_all,
+            },
             "top": self.set_top,
             "left": self.set_left,
             "bottom": self.set_bottom,
@@ -65,7 +71,7 @@ class Controller:
         if getter == value:
             return
 
-        setter = value
+        setter(value)
 
         self.refresh_resolve_api()
         self.refresh_ui()

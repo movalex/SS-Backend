@@ -57,6 +57,13 @@ class Canvas:
     def aspect_ratio(self) -> float:
         return self.width / self.height
 
+    # setters for Controller use
+    def set_width(self, value: int) -> None:
+        self.width = value
+
+    def set_height(self, value: int) -> None:
+        self.height = value
+
 
 class Margin:
     """Margin object. Values defined in pixels but returned normalized."""
@@ -234,6 +241,22 @@ class Margin:
         self._gutter_px = value
         self.compute()
 
+    # setters for Controller use
+    def set_top(self, value: int) -> None:
+        self.top = value
+
+    def set_left(self, value: int) -> None:
+        self.left = value
+
+    def set_bottom(self, value: int) -> None:
+        self.bottom = value
+
+    def set_right(self, value: int) -> None:
+        self.right = value
+
+    def set_gutter(self, value: int) -> None:
+        self.gutter = value
+
 
 class Grid:
     """Grid object. Creates a layout of columns and rows and returns their dimensions in normalized values."""
@@ -386,6 +409,13 @@ class Grid:
     @property
     def cells(self) -> list[GridCell]:
         return self._cells
+
+    # setters for Controller use
+    def set_cols(self, value: int) -> None:
+        self.cols = value
+
+    def set_rows(self, value: int) -> None:
+        self.rows = value
 
 
 class Screen:
