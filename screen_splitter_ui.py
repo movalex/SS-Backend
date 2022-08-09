@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Protocol
 from typing_extensions import Self
 from .handler import EventHandler
 from .classes import Grid, GridCell
@@ -43,6 +44,24 @@ class HandlerNotAttachedError(Exception):
     pass
 
 
+class UI(Protocol):
+    def draw_grid(self) -> None:
+        raise NotImplementedError()
+
+    def draw_screen(self, screen_values: dict[str, float]) -> int:
+        raise NotImplementedError()
+
+    def undraw_screens(self, *ids: int) -> None:
+        raise NotImplementedError()
+
+    def refresh(self, screen_values: list[dict[str, float]] | None) -> list[int] | None:
+        """
+        Refreshes grid and user created screens if there are any.
+        In that case, returns a list of their new rectangle IDs.
+        """
+        raise NotImplementedError()
+
+
 class ScreenSplitterUI(tk.Canvas):
     def __init__(
         self,
@@ -66,6 +85,7 @@ class ScreenSplitterUI(tk.Canvas):
             relief="ridge",
         )
 
+    # PROTOCOL METHODS  =======================================================
     def draw_grid(self) -> None:
         print(
             f"about to generate grid cells for a {self.ss_grid.canvas.resolution} grid."
@@ -127,6 +147,9 @@ class ScreenSplitterUI(tk.Canvas):
 
         return rect_ids
 
+    # =========================================================================
+
+    # Other Methods  ==========================================================
     def bind_screen(self, id: int):
         if not self.handler:
             print("Please attach an event handler first.")
