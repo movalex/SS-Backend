@@ -14,8 +14,11 @@ class Controller:
 
         self.screens: dict[int, dict[str, Screen | tuple[Tool, Tool, Tool] | int]] = {}
 
-        self.commands: dict[str, function] = {
-            "width": self.set_width,
+        self.commands: dict[str, dict[str, function]] = {
+            "width": {
+                "getter": self.grid.canvas._width_px,
+                "setter": self.grid.canvas.width,
+            },
             "height": self.set_height,
             "margin": self.set_margin,
             "top": self.set_top,
@@ -45,17 +48,31 @@ class Controller:
     def canvas_resolution(self) -> tuple[int, int]:
         return self.grid.canvas.resolution
 
-    def refresh_resolve_api(self):
-        screen_tools: list[tuple[Tool, Tool]] = [
-            screen_dict["tools"][0, 1] for screen_dict in self.screens.values()
+    @property
+    def screen_tools(self) -> list[tuple[Tool, Tool]]:
+        return [
+            (screen_dict["tools"][0], screen_dict["tools"][1])
+            for screen_dict in self.screens.values()
         ]
 
-        screen_values = self.screen_values
+    def refresh_resolve_api(self):
 
         self.resolve_api.refresh_global(
-            self.canvas_resolution, screen_tools, screen_values
+            self.canvas_resolution, self.screen_tools, self.screen_values
         )
-        ...
+
+    def change_setting(self, getter, setter, value) -> None:
+        if getter == value:
+            return
+
+        setter = value
+
+        self.refresh_resolve_api()
+        self.refresh_ui()
+
+    def refresh_ui(self):
+        rects = self.ui.refresh()
+        self.update_screen_rect_ids(rects)
 
     # Changes in Canvas =======================================================
     def set_width(self, value: int) -> None:
