@@ -57,12 +57,20 @@ class Canvas:
     def aspect_ratio(self) -> float:
         return self.width / self.height
 
-    # setters for Controller use
+    # Setters and Getters for Controller use
     def set_width(self, value: int) -> None:
         self.width = value
 
     def set_height(self, value: int) -> None:
         self.height = value
+
+    def get_width(self) -> int:
+        """Returns width in pixels."""
+        return self._width_px
+
+    def get_height(self) -> int:
+        """Returns height in pixels."""
+        return self._height_px
 
 
 class Margin:
@@ -241,7 +249,7 @@ class Margin:
         self._gutter_px = value
         self.compute()
 
-    # setters for Controller use
+    # Setters and Getters for Controller use
     def set_top(self, value: int) -> None:
         self.top = value
 
@@ -256,6 +264,29 @@ class Margin:
 
     def set_gutter(self, value: int) -> None:
         self.gutter = value
+
+    def set_all(self, value: int) -> None:
+        self.all = value
+
+    def get_top(self) -> int:
+        """Returns top in pixels."""
+        return self._top_px
+
+    def get_left(self) -> int:
+        """Returns left in pixels."""
+        return self._left_px
+
+    def get_bottom(self) -> int:
+        """Returns bottom in pixels."""
+        return self._bottom_px
+
+    def get_right(self) -> int:
+        """Returns right in pixels."""
+        return self._right_px
+
+    def get_gutter(self) -> int:
+        """Returns gutter in pixels."""
+        return self._gutter_px
 
 
 class Grid:
@@ -410,12 +441,20 @@ class Grid:
     def cells(self) -> list[GridCell]:
         return self._cells
 
-    # setters for Controller use
+    # Setters and Getters for Controller use
     def set_cols(self, value: int) -> None:
         self.cols = value
 
     def set_rows(self, value: int) -> None:
         self.rows = value
+
+    def get_cols(self) -> int:
+        """Returns cols."""
+        return self._cols
+
+    def get_rows(self) -> int:
+        """Returns rows."""
+        return self._rows
 
 
 class Screen:

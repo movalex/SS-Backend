@@ -18,7 +18,7 @@ class EventHandler:
         self.ui.handler = self
 
     def on_change_setting(self=None, key: str = None, var: tk.IntVar = None) -> None:
-        self.controller.do_command(key, var.get())
+        self.controller.change_setting(key, var.get())
 
     # Click and Drag on Canvas ================================================
     def on_click_canvas(self, event: tk.Event) -> None:

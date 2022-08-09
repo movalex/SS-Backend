@@ -16,24 +16,45 @@ class Controller:
 
         self.commands: dict[str, dict[str, function]] = {
             "width": {
-                "getter": self.grid.canvas._width_px,
+                "getter": self.grid.canvas.get_width,
                 "setter": self.grid.canvas.set_width,
             },
             "height": {
-                "getter": self.grid.canvas._height_px,
+                "getter": self.grid.canvas.get_height,
                 "setter": self.grid.canvas.set_height,
             },
             "margin": {
-                "getter": self.grid.margin._all_px,
-                "setter": self.grid.margin.set_all,
+                "getter": self.grid.margin.get_top,  # When margins are linked, they'll all
+                "setter": self.grid.margin.set_all,  # automatically be the same.
             },
-            "top": self.set_top,
-            "left": self.set_left,
-            "bottom": self.set_bottom,
-            "right": self.set_right,
-            "gutter": self.set_gutter,
-            "cols": self.set_cols,
-            "rows": self.set_rows,
+            "top": {
+                "getter": self.grid.margin.get_top,
+                "setter": self.grid.margin.set_top,
+            },
+            "left": {
+                "getter": self.grid.margin.get_left,
+                "setter": self.grid.margin.set_left,
+            },
+            "bottom": {
+                "getter": self.grid.margin.get_bottom,
+                "setter": self.grid.margin.set_bottom,
+            },
+            "right": {
+                "getter": self.grid.margin.get_right,
+                "setter": self.grid.margin.set_right,
+            },
+            "gutter": {
+                "getter": self.grid.margin.get_gutter,
+                "setter": self.grid.margin.set_gutter,
+            },
+            "cols": {
+                "getter": self.grid.get_cols,
+                "setter": self.grid.set_cols,
+            },
+            "rows": {
+                "getter": self.grid.get_rows,
+                "setter": self.grid.set_rows,
+            },
             "add_screen": self.add_screen,
             "delete_screen": self.delete_screen,
             "flip_h": self.flip_h,
@@ -42,33 +63,14 @@ class Controller:
         }
 
     def do_command(self, key: str, value: int | None = None) -> None:
-        print(f"Doing command {key}... Setting to {value}")
         command = self.commands[key]
         command(value)
 
-    @property
-    def screen_values(self) -> list[dict[str, float]]:
-        return [screen_dict["screen"].values for screen_dict in self.screens.values()]
+    def change_setting(self, key: str, value: int) -> None:
+        getter = self.commands[key]["getter"]
+        setter = self.commands[key]["setter"]
 
-    @property
-    def canvas_resolution(self) -> tuple[int, int]:
-        return self.grid.canvas.resolution
-
-    @property
-    def screen_tools(self) -> list[tuple[Tool, Tool]]:
-        return [
-            (screen_dict["tools"][0], screen_dict["tools"][1])
-            for screen_dict in self.screens.values()
-        ]
-
-    def refresh_resolve_api(self):
-
-        self.resolve_api.refresh_global(
-            self.canvas_resolution, self.screen_tools, self.screen_values
-        )
-
-    def change_setting(self, getter, setter, value) -> None:
-        if getter == value:
+        if getter() == value:
             return
 
         setter(value)
@@ -76,113 +78,18 @@ class Controller:
         self.refresh_resolve_api()
         self.refresh_ui()
 
+    # Refreshers
     def refresh_ui(self):
         rects = self.ui.refresh()
         self.update_screen_rect_ids(rects)
 
-    # Changes in Canvas =======================================================
-    def set_width(self, value: int) -> None:
-        if self.grid.canvas.width == value:
-            return
-        self.grid.canvas.width = value
-        self.resolve_api.refresh_global(self.canvas_resolution, self.screen_values)
+    def refresh_resolve_api(self):
 
-        rects = self.ui.refresh()
-        self.update_screen_rect_ids(rects)
+        self.resolve_api.refresh_global(
+            self.canvas_resolution, self.screen_tools, self.screen_values
+        )
 
-    def set_height(self, value: int) -> None:
-        if self.grid.canvas.height == value:
-            return
-        self.grid.canvas.height = value
-        self.resolve_api.refresh_global(self.canvas_resolution, self.screen_values)
-
-        rects = self.ui.refresh()
-        self.update_screen_rect_ids(rects)
-
-    # Changes in Margin =======================================================
-    def set_margin(self, value: int) -> None:
-        mg = self.grid.margin
-        if mg._top_px == mg._left_px == mg._bottom_px == mg._right_px == value:
-            return
-
-        self.grid.margin.all = value
-        self.resolve_api.refresh_global(self.canvas_resolution, self.screen_values)
-
-        rects = self.ui.refresh()
-        self.update_screen_rect_ids(rects)
-
-    def set_top(self, value: int) -> None:
-        if self.grid.margin._top_px == value:
-            return
-
-        self.grid.margin.top = value
-        self.resolve_api.refresh_global(self.canvas_resolution, self.screen_values)
-
-        rects = self.ui.refresh()
-        self.update_screen_rect_ids(rects)
-
-    def set_left(self, value: int) -> None:
-        if self.grid.margin._left_px == value:
-            return
-
-        self.grid.margin.left = value
-        self.resolve_api.refresh_global(self.canvas_resolution, self.screen_values)
-
-        rects = self.ui.refresh()
-        self.update_screen_rect_ids(rects)
-
-    def set_bottom(self, value: int) -> None:
-        if self.grid.margin._bottom_px == value:
-            return
-
-        self.grid.margin.bottom = value
-        self.resolve_api.refresh_global(self.canvas_resolution, self.screen_values)
-
-        rects = self.ui.refresh()
-        self.update_screen_rect_ids(rects)
-
-    def set_right(self, value: int) -> None:
-        if self.grid.margin._right_px == value:
-            return
-
-        self.grid.margin.right = value
-        self.resolve_api.refresh_global(self.canvas_resolution, self.screen_values)
-
-        rects = self.ui.refresh()
-        self.update_screen_rect_ids(rects)
-
-    def set_gutter(self, value: int) -> None:
-        if self.grid.margin._gutter_px == value:
-            return
-
-        self.grid.margin.gutter = value
-        self.resolve_api.refresh_global(self.canvas_resolution, self.screen_values)
-
-        rects = self.ui.refresh()
-        self.update_screen_rect_ids(rects)
-
-    # Changes in Grid =========================================================
-    def set_cols(self, value: int) -> None:
-        if self.grid.cols == value:
-            return
-
-        self.grid.cols = value
-        self.resolve_api.refresh_global(self.canvas_resolution, self.screen_values)
-
-        rects = self.ui.refresh()
-        self.update_screen_rect_ids(rects)
-
-    def set_rows(self, value: int) -> None:
-        if self.grid.rows == value:
-            return
-
-        self.grid.rows = value
-        self.resolve_api.refresh_global(self.canvas_resolution, self.screen_values)
-
-        rects = self.ui.refresh()
-        self.update_screen_rect_ids(rects)
-
-    # Changes in Screens ======================================================
+    # Screen Manipulation  ====================================================
     def add_screen(self, coords: tuple[int, int]):
         new_key = find_first_missing(self.screens.keys())
 
@@ -226,14 +133,14 @@ class Controller:
 
         self.screens.clear()
 
-    # Full Transformations ====================================================
+    # Transformations  ===================================================
     def flip_h(self):
         ...
 
     def flip_v(self):
         ...
 
-    # Changes in self =========================================================
+    # Changes in self  ========================================================
     def update_screen_rect_ids(self, ids: list[int] | None) -> None:
         """When screens are redrawn by the UI, their rectangle ids change."""
         if ids is None:  # Means there are still no screens.
@@ -241,3 +148,19 @@ class Controller:
 
         for screen_dict, id in zip(self.screens.values(), ids):
             screen_dict["rectangle"] = id
+
+    # Useful Properties  ======================================================
+    @property
+    def screen_values(self) -> list[dict[str, float]]:
+        return [screen_dict["screen"].values for screen_dict in self.screens.values()]
+
+    @property
+    def canvas_resolution(self) -> tuple[int, int]:
+        return self.grid.canvas.resolution
+
+    @property
+    def screen_tools(self) -> list[tuple[Tool, Tool]]:
+        return [
+            (screen_dict["tools"][0], screen_dict["tools"][1])
+            for screen_dict in self.screens.values()
+        ]
