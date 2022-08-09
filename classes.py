@@ -650,6 +650,13 @@ class GridCell(Screen):
         self.x = x
         self.y = y
 
+        self.values = {
+            "Width": self.width,
+            "Height": self.height,
+            "Center": [x, y],
+            "Size": 1,
+        }
+
 
 # Exceptions (not yet implemented)
 class MarginsExceedCanvas(Exception):

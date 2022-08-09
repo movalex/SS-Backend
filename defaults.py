@@ -1,4 +1,4 @@
-defaults = {
+DEFAULTS = {
     "width": 1920,
     "height": 1080,
     "top": 25,

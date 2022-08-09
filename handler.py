@@ -1,106 +1,73 @@
+from __future__ import annotations
 from dataclasses import dataclass
 import tkinter as tk
+
+from ss_backend.protocols.ui import UI
 from .style import colors
 from .controller import Controller
 
 
 @dataclass
-class UIHandler:
+class EventHandler:
     """Responsible for getting input from user interaction and passing it along to the Controller."""
 
     controller: Controller
+    ui: UI
 
-    def change_setting(self, event: tk.Event, **kwargs: dict[str, function]) -> None:
-        key_to_pass_along = kwargs.keys()[0]
-        value_to_pass_along = kwargs.values()[0]()
+    def __post_init__(self):
+        self.ui.handler = self
 
-        self.controller.user_request(key_to_pass_along, value_to_pass_along)
+    def on_change_setting(self=None, key: str = None, var: tk.IntVar = None) -> None:
+        self.controller.do_command(key, var.get())
 
-    def request_new_screen():
-        ...
+    # Click and Drag on Canvas ================================================
+    def on_click_canvas(self, event: tk.Event) -> None:
+        ...  # register first coord
 
+    def on_release_canvas(self, event: tk.Event) -> None:
+        ...  # register second coord
+        coords: tuple[int, int] = ...
+        self.controller.do_command("add_screen", coords)
 
-def make_entries(defaults: dict[str, int], ui_handler: UIHandler):
-    # creates dict with vars and labels
-    user_settings = {
-        key: [tk.IntVar(value=value), tk.Label(text=key.title())]
-        for key, value in defaults.items()
-    }
+    # Deleting Screens ========================================================
+    user_wants_to_delete: bool = True
 
-    # creates entries with vars attached
-    for value in user_settings.values():
-        value.append(tk.Entry(textvariable=value[0]))
-
-    # binds entries to set_property method
-    for key, value in user_settings.items():
-        var: tk.IntVar = value[0]
-        entry: tk.Entry = value[2]
-
-        call = lambda self, event: ui_handler.change_setting(**{key: var.get})
-
-        entry.bind("<Return>", call)
-        entry.bind("<FocusOut>", call)
-        entry.bind("<KP_Enter>", call)
-
-
-# this is how it should look: {"width": [tk.IntVar(), tk.Label(), tk.Entry()]}
-
-
-# LINK MARGINS ======================================================================
-
-# link button
-
-link_margins = tk.Label(button_frame_left, text="🔗", foreground=colors.TEXT_DARKER)
-link_margins.grid(column=2, row=5, rowspan=2, sticky=tk.W, padx=4)
-set_hover_style(link_margins)
-link_margins.bind("<Button-1>", screen_splitter.link_margins, add="+")
-
-
-# ENTRIES FOR USER INPUT ==============================================
-def mk_entries(parent: tk.Frame, vars: dict[str, tk.IntVar]):
-    var_entries = {}
-    for key, var in vars.items():
-        new_key = key
-        if key == "cols" or key == "rows":
-            new_key = f"# {key}"
-        label = tk.Label(
-            parent, text=new_key.title(), bg=colors.ROOT_BG, justify=tk.LEFT, padx=20
+    def on_pre_delete_screen(self, event: tk.Event) -> None:
+        canvas: tk.Canvas = event.widget
+        rect_id = canvas.find_closest(event.x, event.y)[0]
+        canvas.itemconfig(
+            rect_id,
+            fill=colors.CANVAS_SCREEN_PRE_DELETE,
+            outline=colors.CANVAS_SCREEN_PRE_DELETE,
         )
 
-        entry = tk.Entry(
-            parent,
-            width=8,
-            justify=tk.CENTER,
-            textvariable=var,
-            foreground=colors.TEXT,
-            bd=0,
-            relief="flat",
-            bg=colors.ENTRY_BG,
-            highlightthickness=1,
-            highlightbackground=colors.CANVAS_BG,
-            highlightcolor=colors.CANVAS_BG,
-            disabledbackground=colors.CANVAS_BLOCK,
-        )
-        var_entries[key] = (label, entry)
-    return var_entries
+    def on_delete_screen(self, event: tk.Event) -> None:
+        if not self.user_wants_to_delete:
+            self.user_wants_to_delete = True
+            return "break"
 
+        canvas: tk.Canvas = event.widget
+        rect_id = canvas.find_closest(event.x, event.y)[0]
 
-def grid_entries(entries: dict[str, tuple[tk.Label, tk.Entry]]):
-    i = 1
-    for key, tuple in entries.items():
-        tuple[0].grid(column=3, row=i, padx=0, pady=10, sticky=tk.W)
-        tuple[1].grid(column=4, row=i, padx=10, ipady=5)
-        if key == "height" or key == "gutter":
-            i += 1
-        i += 1
+        self.controller.do_command("delete_screen", rect_id)
 
-    # adds spacers
-    tk.Label(button_frame_left, height=1, background=colors.ROOT_BG).grid(
-        column=2, row=3, pady=3
-    )
-    tk.Label(button_frame_left, height=1, background=colors.ROOT_BG).grid(
-        column=2, row=9, pady=3
-    )
-    tk.Label(button_frame_left, height=1, background=colors.ROOT_BG).grid(
-        column=2, row=12, pady=3
-    )
+    def on_cancel_screen_deletion(self, event: tk.Event, id: int = None) -> None:
+        canvas: tk.Canvas = event.widget
+        self.user_wants_to_delete = False
+        canvas.itemconfig(id, fill=colors.CANVAS_SCREEN, outline=colors.CANVAS_SCREEN)
+
+    # Transformations on Right Button Frame ===================================
+    def on_flip_h(self, event: tk.Event) -> None:
+        self.controller.do_command("flip_h")
+
+    def on_flip_v(self, event: tk.Event) -> None:
+        self.controller.do_command("flip_v")
+
+    def on_rotate_cw(self, event: tk.Event) -> None:
+        self.controller.do_command("rotate_cw")
+
+    def on_rotate_ccw(self, event: tk.Event) -> None:
+        self.controller.do_command("rotate_ccw")
+
+    def on_delete_all(self, event: tk.Event) -> None:
+        self.controller.do_command("delete_all_screens")

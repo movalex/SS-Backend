@@ -1,4 +1,5 @@
-from ss_backend.fake_fusion import Comp, Fusion, Tool
+from ss_backend.fusion_alias import Comp, Fusion, Tool
+from .utils import find_first_missing
 
 # FAKE FUSION FOR TESTING
 def initialize_fake_fusion():
@@ -17,17 +18,6 @@ except NameError:
 IS_RESOLVE = True if fusion.GetResolve() else False
 
 
-def find_first_missing(list: list[int]):
-    for index, value in enumerate(list):
-        if index == value:
-            first_missing = value + 1
-            continue
-        else:
-            first_missing = index
-            break
-    return first_missing
-
-
 class ResolveFusionAPI:
     def __init__(self) -> None:
         self.merges: list[Tool] = []
@@ -35,16 +25,28 @@ class ResolveFusionAPI:
         self.media_ins: list[Tool] = []
         self.screens: list[set[Tool, Tool, Tool]] = []
 
-    def refresh_global(self):
+    def refresh_global(
+        self,
+        resolution: tuple[int, int],
+        screen_tools: list[tuple[Tool, Tool]] | None = None,
+        screen_values: list[dict[str, float]] | None = None,
+    ):
         """Calls all necessary methods for when user changes settings."""
-        ...
+        if not (
+            self.canvas.GetInput("Width") == resolution[0]
+            and self.canvas.GetInput("Height") == resolution[1]
+        ):
+            self.set_inputs_canvas(*resolution)
 
-    def refresh_positions(self):
-        """Calls all necessary methods for when user deletes screens."""
-        ...
+        if not screen_tools:
+            return
+
+        for tools, values in zip(screen_tools, screen_values):
+            merge, mask = tools
+            self.set_inputs_screen(merge, mask, **values)
 
     # POSITIONING NODES ON FLOW
-    def set_position_all_tools(self):
+    def refresh_positions(self):
         flow = comp.CurrentFrame.FlowView
         flow.QueueSetPos(self.canvas, 0, 0)
         if self.merges:
@@ -110,7 +112,7 @@ class ResolveFusionAPI:
         comp.CurrentFrame.ViewOn(media_out, 2)
         self.media_out = media_out
 
-    def add_screen(self, **kwargs):
+    def add_screen(self, **kwargs) -> tuple[Tool, Tool, Tool]:
         node_y = len(self.merges) + 1
 
         merge = comp.AddTool("Merge", 0, node_y)
@@ -144,12 +146,13 @@ class ResolveFusionAPI:
     def delete_tool(self, tool: Tool) -> None:
         tool.Delete()
 
-    def delete_tool_batch(self, tools: list[Tool]) -> None:
+    def delete_tool_batch(self, *tools: Tool) -> None:
         for tool in tools:
             tool.Delete()
 
-    def delete_screen(self, screen) -> None:
-        ...
+    def delete_screen(self, screen: tuple[Tool, Tool, Tool]) -> None:
+        self.delete_tool_batch(*screen)
+        self.refresh_positions()
 
     # UTILS
     @property

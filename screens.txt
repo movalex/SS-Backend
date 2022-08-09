@@ -5,7 +5,7 @@ from. resolve_api import Tool
 {
     1: {
         "screen": Screen, -> doesn't change, will have attributes that inform others recomputed after user interaction
-        "tools": set[Tool, Tool, Tool], -> don't change, but can have attributes set
+        "tools": tuple[Tool, Tool, Tool], -> don't change, but can have attributes set
         "rectangle": int, -> the id of the canvas item, will be changed at every redraw
     }
 }
