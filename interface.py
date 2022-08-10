@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from .handler import EventHandler
 from .style import colors
