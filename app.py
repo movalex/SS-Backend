@@ -1,13 +1,13 @@
 import tkinter as tk
 from .style import colors, fonts
-from .classes import Canvas, Margin, Grid
+from .core import Canvas, Margin, Grid
 from . import (
     DEFAULTS,
     ResolveFusionAPI,
-    ScreenSplitterUI,
+    ScreenSplitterGUI,
     Controller,
     EventHandler,
-    Interface,
+    UserInput,
 )
 
 
@@ -77,7 +77,7 @@ class App:
         self.api.add_canvas(*self.grid.canvas.resolution)
 
         # Screen Creation UI
-        self.gui = ScreenSplitterUI(
+        self.gui = ScreenSplitterGUI(
             master=self.frame_screen_creation,
             ss_grid=self.grid,
             max_width=800,
@@ -94,7 +94,7 @@ class App:
         self.handler = EventHandler(self.controller, self.gui)
 
         # Interface – Left Frame
-        self.interface = Interface(self.handler)
+        self.interface = UserInput(self.handler)
         self.interface.make_left_frame_entries(self.frame_left_entries)
         self.interface.bind_left_frame_entries()
         self.interface.grid_entries(self.frame_left_entries)

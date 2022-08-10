@@ -11,4 +11,4 @@ DEFAULTS = {
 }
 
 if __name__ == "__main__":
-    print("You're not supposed to run this file. Get out of here!")
+    print("No point running this file. But I guess feel free to edit the values above!")

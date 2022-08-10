@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Protocol
 from typing_extensions import Self
-from .classes import Grid, GridCell
+from .core import Grid, GridCell
 from dataclasses import dataclass
 import tkinter as tk
 from .style import colors
@@ -105,7 +105,7 @@ class Handler(Protocol):
         pass
 
 
-class UI(Protocol):
+class GUI(Protocol):
     def draw_grid(self) -> None:
         raise NotImplementedError()
 
@@ -127,7 +127,7 @@ class UI(Protocol):
         raise NotImplementedError()
 
 
-class ScreenSplitterUI(tk.Canvas):
+class ScreenSplitterGUI(tk.Canvas):
     def __init__(
         self,
         master: tk.Widget,
@@ -245,7 +245,7 @@ class ScreenSplitterUI(tk.Canvas):
         self.tag_bind(
             id,
             "<Button-2> <Leave>",
-            lambda e: self.handler.on_cancel_screen_deletion(id=id),
+            lambda e: self.handler.on_cancel_screen_deletion(event=e, id=id),
         )
         self.tag_bind(id, "<Button-2> <ButtonRelease-2>", self.handler.on_delete_screen)
 

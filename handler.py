@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import tkinter as tk
-from .ui import UI, Rectangle
+from .gui import GUI, Rectangle
 from .style import colors
 from .controller import Controller
 
@@ -39,21 +39,21 @@ class EventHandler:
     """Responsible for getting input from user interaction and passing it along to the Controller."""
 
     controller: Controller
-    ui: UI
+    gui: GUI
 
     def __post_init__(self):
-        self.ui.handler = self
+        self.gui.handler = self
         self.new_screen_coords: tuple[float, float] = None
         self.new_screen_indexes: tuple[int, int] = None
-        self.ui.bind("<Button-1>", self.on_click_canvas, add="+")
-        self.ui.bind("<ButtonRelease-1>", self.on_release_canvas, add="+")
+        self.gui.bind("<Button-1>", self.on_click_canvas, add="+")
+        self.gui.bind("<ButtonRelease-1>", self.on_release_canvas, add="+")
 
     def on_change_setting(self=None, key: str = None, var: tk.IntVar = None) -> None:
         self.controller.change_setting(key, var.get())
 
     # Click and Drag on Canvas ================================================
     def on_click_canvas(self, event: tk.Event) -> None:
-        canvas: UI = event.widget
+        canvas: GUI = event.widget
 
         item = canvas.find_closest(event.x, event.y)
         if canvas.itemcget(item, "fill") == colors.CANVAS_SCREEN:
@@ -74,7 +74,7 @@ class EventHandler:
         if self.new_screen_coords is None:
             return
 
-        canvas: UI = event.widget
+        canvas: GUI = event.widget
 
         coords = get_event_coords_normalized(event)
 
@@ -128,6 +128,14 @@ class EventHandler:
 
     def on_rotate_ccw(self, event: tk.Event) -> None:
         self.controller.do_command("rotate_ccw")
+
+    def on_pre_delete_all(self, event: tk.Event) -> None:
+        canvas = self.gui
+        canvas.itemconfig(
+            "screen",
+            fill=colors.CANVAS_SCREEN_PRE_DELETE,
+            outline=colors.CANVAS_SCREEN_PRE_DELETE,
+        )
 
     def on_delete_all(self, event: tk.Event) -> None:
         self.controller.do_command("delete_all_screens")

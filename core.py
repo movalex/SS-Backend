@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import Callable
 
 
 # helper function for Screen and Grid classes
@@ -14,7 +13,7 @@ def get_coords(item, matrix: list[list]) -> tuple[int, int]:
 class Canvas:
     """Canvas object. Sizes defined and returned in pixels."""
 
-    _children: list[Callable] = []
+    _children: list[function] = []
 
     def __init__(self, resolution: tuple[int, int] = (1920, 1080)):
         self._width_px, self._height_px = resolution
@@ -24,7 +23,7 @@ class Canvas:
         message = f"Width: {self.width}px\tHeight: {self.height}px\n"
         return title + message
 
-    def give_birth(self, function: Callable) -> None:
+    def give_birth(self, function: function) -> None:
         self._children.append(function)
 
     @property
@@ -76,7 +75,7 @@ class Canvas:
 class Margin:
     """Margin object. Values defined in pixels but returned normalized."""
 
-    _children: list[Callable] = []
+    _children: list[function] = []
 
     def __init__(
         self,
@@ -114,7 +113,7 @@ class Margin:
         message = f"Top: {self._top_px}px\tBottom: {self._right_px}px\tGutter: {self._gutter_px}px\nLeft: {self._left_px}px\tRight: {self._right_px}px\n"
         return title + message
 
-    def give_birth(self, function: Callable) -> None:
+    def give_birth(self, function: function) -> None:
         self._children.append(function)
 
     # THE COMPUTER ========================================
@@ -304,7 +303,7 @@ class Grid:
         self.margin = margin
         self._cols, self._rows = layout
 
-        self._children: list[Callable] = None
+        self._children: list[function] = None
         self._matrix: list[list[int]] = None
 
         self._screens: list[Screen] = None
@@ -344,7 +343,7 @@ class Grid:
             child()
 
     # OBSERVER METHODS ========================================
-    def give_birth(self, function: Callable) -> None:
+    def give_birth(self, function: function) -> None:
         if self._children is None:
             self._children = []
         self._children.append(function)

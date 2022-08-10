@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-from .classes import Grid, Screen
+from .core import Grid, Screen
 from .fusion_alias import Tool
 from .resolve_api import ResolveAPI
-from .ui import UI
+from .gui import GUI
 from .utils import find_first_missing
 
 
@@ -17,10 +17,10 @@ class ScreenDict:
 class Controller:
     """Responsible for receiving inputs and executing commands"""
 
-    def __init__(self, grid: Grid, resolve_api: ResolveAPI, ui: UI) -> None:
+    def __init__(self, grid: Grid, resolve_api: ResolveAPI, gui: GUI) -> None:
         self.grid = grid
         self.resolve_api = resolve_api
-        self.ui = ui
+        self.gui = gui
 
         self.screens: list[ScreenDict] = []
 
@@ -93,7 +93,7 @@ class Controller:
 
     # Refreshers
     def refresh_ui(self):
-        rects = self.ui.refresh()
+        rects = self.gui.refresh(self.screen_values)
         self.update_screen_rect_ids(rects)
 
     def refresh_resolve_api(self):
@@ -111,7 +111,7 @@ class Controller:
 
         screen = Screen.create_from_coords(self.grid, *coords)
         tools: tuple[Tool, Tool, Tool] = self.resolve_api.add_screen(**screen.values)
-        rectangle = self.ui.draw_screen(screen.values)
+        rectangle = self.gui.draw_screen(screen.values)
 
         screen_dict = ScreenDict(id, screen, tools, rectangle)
 
@@ -125,7 +125,7 @@ class Controller:
 
         self.grid.screens.remove(screen.screen)
         self.resolve_api.delete_screen(screen.tools)
-        self.ui.undraw_screens(screen.rectangle)
+        self.gui.undraw_screens(screen.rectangle)
 
         self.screens.remove(screen)
 
@@ -141,7 +141,7 @@ class Controller:
             rect = screen_dict.rectangle
             rects.append(rect)
 
-        self.ui.undraw_screens(*rects)
+        self.gui.undraw_screens(*rects)
 
         self.resolve_api.delete_all_screens()  # Fusion automatically keeps track
 
@@ -149,10 +149,16 @@ class Controller:
 
     # Transformations  ===================================================
     def flip_h(self):
-        ...
+        self.grid.flip_horizontally()
+
+        self.refresh_resolve_api()
+        self.refresh_ui()
 
     def flip_v(self):
-        ...
+        self.grid.flip_vertically()
+
+        self.refresh_resolve_api()
+        self.refresh_ui()
 
     # Changes in self  ========================================================
     def update_screen_rect_ids(self, rect_ids: list[int] | None) -> None:

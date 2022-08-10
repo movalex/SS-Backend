@@ -42,7 +42,7 @@ def set_hover_style(button: tk.Label):
 
 
 @dataclass
-class Interface:
+class UserInput:
     """Responsible for constructing and binding the UI widgets that get user input"""
 
     handler: EventHandler
@@ -120,9 +120,7 @@ class Interface:
         link_margins.grid(column=2, row=5, rowspan=2, sticky=tk.W, padx=4)
         self.link_margins_button = link_margins
 
-    def on_link_margins(
-        self, event: tk.Event
-    ) -> None:  # Still problematic because a change in top entry won't update the rest now.
+    def on_link_margins(self, event: tk.Event) -> None:
         """Transforms Top Entry into a control for all margins at once, disables other margin controls"""
 
         top, left = self.user_settings["top"], self.user_settings["left"]
@@ -229,7 +227,7 @@ class Interface:
         )
         set_hover_style(delete_text)
 
-        # delete_text.bind("<Button-1>", self.handler.on_pre_delete_all, add="+")  # Won't implement yet
+        delete_text.bind("<Button-1>", self.handler.on_pre_delete_all, add="+")
         delete_text.bind("<ButtonRelease-1>", self.handler.on_delete_all, add="+")
         delete_text.grid(column=1, row=5, padx=0, pady=20, sticky=tk.W)
 
