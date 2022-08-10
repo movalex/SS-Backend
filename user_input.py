@@ -23,7 +23,7 @@ def bind_batch(
 
 def unbind_batch(widget: tk.Widget, events: list[str]) -> None:
     for event in events:
-        widget.bind(event)
+        widget.unbind(event)
 
 
 def btn_on_hover(event: tk.Event, foreground: str):
