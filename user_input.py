@@ -179,7 +179,7 @@ class UserInput:
 
         events = ["<Return>", "<FocusOut>", "<KP_Enter>"]
         unbind_batch(top.entry, events)
-        bind_batch(top.entry, call)
+        bind_batch(top.entry, events, call)
 
     def sync_vars_to_top(self, event: tk.Event = None):
         top_value = self.user_settings["top"].var.get()
