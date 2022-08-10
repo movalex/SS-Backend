@@ -1,9 +1,37 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import tkinter as tk
-from .ui import UI
+from .ui import UI, Rectangle
 from .style import colors
 from .controller import Controller
+
+
+def is_within(coords: tuple[float, float], area: dict[tuple[float, float]]) -> bool:
+    x, y = coords[0], coords[1]
+    if x <= area["top_left"][0]:
+        return False
+    if x >= area["top_right"][0]:
+        return False
+    if y >= area["top_left"][1]:
+        return False
+    if y <= area["bottom_left"][1]:
+        return False
+    return True
+
+
+def find_grid_block_within(
+    coords: tuple[float, float], grid_blocks: list[Rectangle]
+) -> Rectangle:
+    return next(
+        (block for block in grid_blocks if is_within(coords, block.corners)),
+        None,
+    )
+
+
+def get_event_coords_normalized(event: tk.Event) -> tuple[float, float]:
+    self: tk.Widget = event.widget
+    coords = (event.x / self.winfo_width(), 1 - event.y / self.winfo_height())
+    return coords
 
 
 @dataclass
@@ -15,18 +43,51 @@ class EventHandler:
 
     def __post_init__(self):
         self.ui.handler = self
+        self.new_screen_coords: tuple[float, float] = None
+        self.new_screen_indexes: tuple[int, int] = None
+        self.ui.bind("<Button-1>", self.on_click_canvas, add="+")
+        self.ui.bind("<ButtonRelease-1>", self.on_release_canvas, add="+")
 
     def on_change_setting(self=None, key: str = None, var: tk.IntVar = None) -> None:
         self.controller.change_setting(key, var.get())
 
     # Click and Drag on Canvas ================================================
     def on_click_canvas(self, event: tk.Event) -> None:
-        ...  # register first coord
+        canvas: UI = event.widget
+
+        item = canvas.find_closest(event.x, event.y)
+        if canvas.itemcget(item, "fill") == colors.CANVAS_SCREEN:
+            self.new_screen_coords = None
+            return
+
+        coords = get_event_coords_normalized(event)
+        self.new_screen_coords = coords
+        block = find_grid_block_within(coords, canvas.grid_blocks)
+
+        if block is not None:
+            index = block.index
+            self.new_screen_indexes = index
+            return
+        self.new_screen_indexes = None
 
     def on_release_canvas(self, event: tk.Event) -> None:
-        ...  # register second coord
-        coords: tuple[int, int] = ...
-        self.controller.do_command("add_screen", coords)
+        if self.new_screen_coords is None:
+            return
+
+        canvas: UI = event.widget
+
+        coords = get_event_coords_normalized(event)
+
+        self.new_screen_coords = (self.new_screen_coords, coords)
+
+        block = find_grid_block_within(coords, canvas.grid_blocks)
+        if block is not None:
+            index = block.index
+            self.new_screen_indexes = (self.new_screen_indexes, index)
+            self.controller.do_command("add_screen", self.new_screen_indexes)
+            return
+
+        self.new_screen_indexes = None
 
     # Deleting Screens ========================================================
     user_wants_to_delete: bool = True

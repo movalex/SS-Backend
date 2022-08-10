@@ -15,20 +15,21 @@ class Rectangle:
 
     parent: tk.Canvas
     screen_values: dict[str, float | list[float]]
+    index: int = None
 
     def compute(self) -> Self:
 
         canvas_width = self.parent.winfo_width()
         canvas_height = self.parent.winfo_height()
 
-        width, height, center, size = self.screen_values.values()
-        x, y = center
-        y = 1 - y
+        self.width, self.height, center, size = self.screen_values.values()
+        self.x, y = center
+        self.y = 1 - y
 
-        self.x0 = (x - width / 2) * canvas_width
-        self.y0 = (y - height / 2) * canvas_height
-        self.x1 = self.x0 + width * canvas_width
-        self.y1 = self.y0 + height * canvas_height
+        self.x0 = (self.x - self.width / 2) * canvas_width
+        self.y0 = (self.y - self.height / 2) * canvas_height
+        self.x1 = self.x0 + self.width * canvas_width
+        self.y1 = self.y0 + self.height * canvas_height
 
         return self
 
@@ -37,6 +38,22 @@ class Rectangle:
             self.x0, self.y0, self.x1, self.y1, **settings
         )
         return rectangle
+
+    @property
+    def corners(self) -> dict[tuple]:
+        y = 1 - self.y
+        top_left = (self.x - self.width / 2, y + self.height / 2)
+        top_right = (self.x + self.width / 2, y + self.height / 2)
+        bottom_left = (self.x - self.width / 2, y - self.height / 2)
+        bottom_right = (self.x + self.width / 2, y - self.height / 2)
+
+        corners = {
+            "top_left": top_left,
+            "top_right": top_right,
+            "bottom_left": bottom_left,
+            "bottom_right": bottom_right,
+        }
+        return corners
 
 
 class SelectionRectangle:
@@ -105,6 +122,10 @@ class UI(Protocol):
         """
         raise NotImplementedError()
 
+    @property
+    def grid_blocks(self):
+        raise NotImplementedError()
+
 
 class ScreenSplitterUI(tk.Canvas):
     def __init__(
@@ -119,7 +140,8 @@ class ScreenSplitterUI(tk.Canvas):
         self.max_width = max_width
         self.max_height = max_height
 
-        self.grid_blocks: list[int] = None
+        self._grid_blocks: list[Rectangle] = None
+        self.grid_block_ids: list[int] = None
         self.handler: Handler = None
 
         self.config(
@@ -141,8 +163,10 @@ class ScreenSplitterUI(tk.Canvas):
 
         rects: list[Rectangle] = []
         for cell in grid_cells:
-            rect = Rectangle(self, cell.values)
+            rect = Rectangle(self, cell.values, cell.index)
             rects.append(rect)
+
+        self.grid_blocks = rects
 
         gutter_too_small = self.ss_grid.margin.get_gutter() < 4
 
@@ -161,7 +185,7 @@ class ScreenSplitterUI(tk.Canvas):
             )
             rect_ids.append(rect_id)
 
-        self.grid_blocks = rect_ids
+        self.grid_block_ids = rect_ids
 
     def draw_screen(self, screen_values: dict[str, float | list[float]]) -> int:
         self.update()
@@ -187,7 +211,7 @@ class ScreenSplitterUI(tk.Canvas):
         """
 
         self.delete("screen")
-        self.delete(*self.grid_blocks)
+        self.delete(*self.grid_block_ids)
 
         self.draw_canvas()
         self.draw_grid()
@@ -200,6 +224,14 @@ class ScreenSplitterUI(tk.Canvas):
                 rect_ids.append(rect_id)
 
         return rect_ids
+
+    @property
+    def grid_blocks(self):
+        return self._grid_blocks
+
+    @grid_blocks.setter
+    def grid_blocks(self, value):
+        self._grid_blocks = value
 
     # =========================================================================
 

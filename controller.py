@@ -110,7 +110,7 @@ class Controller:
             id = 0
 
         screen = Screen.create_from_coords(self.grid, *coords)
-        tools: tuple[Tool, Tool, Tool] = self.resolve_api.add_screen(screen.values)
+        tools: tuple[Tool, Tool, Tool] = self.resolve_api.add_screen(**screen.values)
         rectangle = self.ui.draw_screen(screen.values)
 
         screen_dict = ScreenDict(id, screen, tools, rectangle)
