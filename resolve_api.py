@@ -1,9 +1,10 @@
 from typing import Protocol
-from ss_backend.fusion_alias import Comp, Fusion, Tool
+from .fusion_alias import Comp, Fusion, Tool
 from .utils import find_first_missing
 
 # FAKE FUSION FOR TESTING
 def initialize_fake_fusion():
+    print("Initializing fake Fusion.")
     global fusion, comp
     fusion = Fusion()
     comp = Comp()
