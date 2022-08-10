@@ -4,6 +4,7 @@ from .defaults import DEFAULTS
 from .controller import Controller
 from .handler import EventHandler
 from .interface import Interface
-from .resolve_fusion_api import ResolveFusionAPI
+from .resolve_api import ResolveFusionAPI
 from .layout import AppLayout
-from .screen_splitter_ui import ScreenSplitterUI
+from .ui import ScreenSplitterUI
+from .app import App

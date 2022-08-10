@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Protocol
 from typing_extensions import Self
-from .handler import EventHandler
 from .classes import Grid, GridCell
 from dataclasses import dataclass
 import tkinter as tk
@@ -76,7 +75,7 @@ class ScreenSplitterUI(tk.Canvas):
         self.max_height = max_height
 
         self.grid_blocks: list[int] = None
-        self.handler: EventHandler = None
+        self.handler = None
 
         self.config(
             background=colors.CANVAS_BG,

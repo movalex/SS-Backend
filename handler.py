@@ -1,8 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import tkinter as tk
-
-from ss_backend.protocols.ui import UI
+from .ui import UI
 from .style import colors
 from .controller import Controller
 

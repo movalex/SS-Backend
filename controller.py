@@ -1,7 +1,17 @@
+from dataclasses import dataclass
 from .classes import Grid, Screen
-from .protocols import ResolveAPI, UI
 from .fusion_alias import Tool
+from .resolve_api import ResolveAPI
+from .ui import UI
 from .utils import find_first_missing
+
+
+@dataclass
+class ScreenDict:
+    id: int
+    screen: Screen
+    tools: list[Tool]
+    rectangle: int
 
 
 class Controller:
