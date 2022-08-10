@@ -13,6 +13,18 @@ class UserSetting:
     entry: tk.Entry = None
 
 
+def bind_batch(
+    widget: tk.Widget, events: list[str], func: function, add: str = None
+) -> None:
+    for event in events:
+        widget.bind(event, func, add=add)
+
+
+def unbind_batch(widget: tk.Widget, events: list[str]) -> None:
+    for event in events:
+        widget.bind(event)
+
+
 @dataclass
 class Interface:
     """Responsible for constructing and binding the UI widgets that get user input"""
@@ -64,13 +76,11 @@ class Interface:
         def call(key, value):
             return lambda e: self.handler.on_change_setting(key, value)
 
-        # Binds entries to set_property method.
+        # Binds entries to on_change_setting method.
+        events = ["<Return>", "<FocusOut>", "<KP_Enter>"]
         for setting in self.user_settings.values():
             this_call = call(setting.key, setting.var)
-
-            setting.entry.bind("<Return>", this_call)
-            setting.entry.bind("<FocusOut>", this_call)
-            setting.entry.bind("<KP_Enter>", this_call)
+            bind_batch(setting.entry, events, this_call)
 
     def grid_entries(self, parent: tk.Frame):
         i = 1
@@ -108,25 +118,16 @@ class Interface:
 
         top.label.configure(text="Margin")
 
-        # Unbinds margin top entry.
-        top.entry.unbind("<Return>")
-        top.entry.unbind("<FocusOut>")
-        top.entry.unbind("<KP_Enter>")
+        events = ["<Return>", "<FocusOut>", "<KP_Enter>"]
 
-        # Rebinds it to change everything.
-        top.entry.bind("<Return>", call)
-        top.entry.bind("<FocusOut>", call)
-        top.entry.bind("<KP_Enter>", call)
-
-        top.entry.bind("<Return>", self.sync_vars_to_top, add="+")
-        top.entry.bind("<FocusOut>", self.sync_vars_to_top, add="+")
-        top.entry.bind("<KP_Enter>", self.sync_vars_to_top, add="+")
+        unbind_batch(top.entry, events)
+        bind_batch(top.entry, events, call)
+        bind_batch(top.entry, events, self.sync_vars_to_top, add="+")
 
         # Disables left, bottom and right margin Entries and darkens Label text.
         lbr_labels = [_.label for _ in (left, bottom, right)]
         lbr_entries = [_.entry for _ in (left, bottom, right)]
 
-        self.sync_vars_to_top()
         for entry, label in zip(lbr_entries, lbr_labels):
             entry.configure(state="disabled")
             label.configure(foreground=colors.TEXT_DARKER)
@@ -136,6 +137,8 @@ class Interface:
         link_margins_button.unbind("<Button-1>")
         link_margins_button.bind("<Button-1>", self.on_unlink_margins)
 
+        # Do bindings for the first time.
+        self.sync_vars_to_top()
         self.handler.on_change_setting(key="margin", var=top.var)
 
     def on_unlink_margins(self, event: tk.Event):
@@ -160,13 +163,9 @@ class Interface:
 
         top.label.configure(text="Top")
 
-        top.entry.unbind("<Return>")
-        top.entry.unbind("<FocusOut>")
-        top.entry.unbind("<KP_Enter>")
-
-        top.entry.bind("<Return>", call)
-        top.entry.bind("<FocusOut>", call)
-        top.entry.bind("<KP_Enter>", call)
+        events = ["<Return>", "<FocusOut>", "<KP_Enter>"]
+        unbind_batch(top.entry, events)
+        bind_batch(top.entry, call)
 
     def sync_vars_to_top(self, event: tk.Event = None):
         top_value = self.user_settings["top"].var.get()
