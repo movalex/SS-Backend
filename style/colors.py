@@ -1,5 +1,5 @@
 # root
-ROOT_BG = "#282828"
+ROOT_BG = "#252525"
 TEXT = "#D0D0D0"
 TEXT_DARKER = "#A3A3A3"
 

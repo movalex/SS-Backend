@@ -39,6 +39,40 @@ class Rectangle:
         return rectangle
 
 
+class SelectionRectangle:
+    def __init__(self, canvas: tk.Canvas):
+        self.canvas = canvas
+        self.item = None
+
+    def draw(self, start: list[int, int], end: list[int, int], **opts):
+        """Draw the rectangle"""
+        return self.canvas.create_rectangle(*(list(start) + list(end)), **opts)
+
+    def autodraw(self, **opts):
+        """Setup automatic drawing; supports command option"""
+        self.start = None
+        self.canvas.bind("<Button-1>", self.__update, "+")
+        self.canvas.bind("<B1-Motion>", self.__update, "+")
+        self.canvas.bind("<ButtonRelease-1>", self.__stop, "+")
+
+        self.rectopts = opts
+
+    def __update(self, event: tk.Event):
+        if not self.start:
+            self.start = [event.x, event.y]
+            return
+
+        if self.item is not None:
+            self.canvas.delete(self.item)
+        self.item = self.draw(self.start, (event.x, event.y), **self.rectopts)
+        # self._command(self.start, (event.x, event.y))
+
+    def __stop(self, event: tk.Event):
+        self.start = None
+        self.canvas.delete(self.item)
+        self.item = None
+
+
 class HandlerNotAttachedError(Exception):
     pass
 
@@ -95,6 +129,11 @@ class ScreenSplitterUI(tk.Canvas):
             relief="ridge",
         )
 
+        selection_rectangle = SelectionRectangle(self)
+        selection_rectangle.autodraw(
+            fill="", width=0.5, outline=colors.TEXT_DARKER, dash=(4, 4)
+        )
+
     # PROTOCOL METHODS  =======================================================
     def draw_grid(self) -> None:
         self.update()
@@ -105,13 +144,19 @@ class ScreenSplitterUI(tk.Canvas):
             rect = Rectangle(self, cell.values)
             rects.append(rect)
 
+        gutter_too_small = self.ss_grid.margin.get_gutter() < 4
+
         rect_ids: list[int] = []
         for rect in rects:
             rect_id = rect.compute().draw(
                 fill=colors.CANVAS_BLOCK,
                 activefill=colors.CANVAS_BLOCK_HOVER,
-                outline=colors.CANVAS_BLOCK,
-                activeoutline=colors.CANVAS_BLOCK,
+                outline=colors.CANVAS_BLOCK
+                if not gutter_too_small
+                else colors.CANVAS_BG,
+                activeoutline=colors.CANVAS_BLOCK
+                if not gutter_too_small
+                else colors.CANVAS_BG,
                 activewidth=1,
             )
             rect_ids.append(rect_id)

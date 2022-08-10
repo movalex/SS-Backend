@@ -74,7 +74,10 @@ class Controller:
 
     def do_command(self, key: str, value: int | None = None) -> None:
         command = self.commands[key]
-        command(value)
+        if value:
+            command(value)
+            return
+        command()
 
     def change_setting(self, key: str, value: int) -> None:
         getter = self.commands[key]["getter"]

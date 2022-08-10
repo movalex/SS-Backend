@@ -1,6 +1,6 @@
 import tkinter as tk
 from .style import colors, fonts
-from .classes import Canvas, Margin, Grid, Screen
+from .classes import Canvas, Margin, Grid
 from . import (
     DEFAULTS,
     ResolveFusionAPI,
@@ -93,14 +93,22 @@ class App:
         # Handler
         self.handler = EventHandler(self.controller, self.gui)
 
-        # Interface
+        # Interface – Left Frame
         self.interface = Interface(self.handler)
         self.interface.make_left_frame_entries(self.frame_left_entries)
         self.interface.bind_left_frame_entries()
         self.interface.grid_entries(self.frame_left_entries)
         self.interface.make_link_margins_button(self.frame_left_entries)
 
-        ...
+        # Interface – Transformation buttons
+        frame = self.frame_right_transformations
+
+        frame.columnconfigure(index=1, weight=1)
+        for i in range(6):
+            frame.rowconfigure(index=i + 1, weight=1)
+        frame.option_add("*font", fonts.SMALL)
+
+        self.interface.make_transformation_buttons(frame)
 
     def run(self):
         try:

@@ -26,6 +26,21 @@ def unbind_batch(widget: tk.Widget, events: list[str]) -> None:
         widget.bind(event)
 
 
+def btn_on_hover(event: tk.Event, foreground: str):
+    self: tk.Widget = event.widget
+    self.configure(foreground=foreground)
+
+
+def set_hover_style(button: tk.Label):
+    button.bind("<Enter>", lambda e: btn_on_hover(e, colors.TEXT))
+    button.bind("<Leave>", lambda e: btn_on_hover(e, colors.TEXT_DARKER))
+    button.bind("<Button-1>", lambda e: btn_on_hover(e, "white"))
+    button.bind(
+        "<ButtonRelease-1>",
+        lambda e: btn_on_hover(e, colors.TEXT_DARKER),
+    )
+
+
 @dataclass
 class Interface:
     """Responsible for constructing and binding the UI widgets that get user input"""
@@ -179,8 +194,47 @@ class Interface:
             var.set(top_value)
 
     # Transformation buttons ==================================================
-    def make_transformation_buttons(self):
-        raise NotImplementedError()
+    def make_transformation_buttons(self, parent: tk.Frame):
+        # Flip Vertically
+        flipv_text = tk.Label(
+            parent,
+            text="↕️ Flip Vertically",
+            justify=tk.LEFT,
+            foreground=colors.TEXT_DARKER,
+        )
+
+        set_hover_style(flipv_text)
+
+        flipv_text.bind("<Button-1>", self.handler.on_flip_v, add="+")
+        flipv_text.grid(column=1, row=3, padx=0, pady=20, sticky=tk.W)
+
+        # Flip Horizontally
+        fliph_text = tk.Label(
+            parent,
+            text="↔️ Flip Horizontally",
+            justify=tk.LEFT,
+            foreground=colors.TEXT_DARKER,
+        )
+        set_hover_style(fliph_text)
+
+        fliph_text.bind("<Button-1>", self.handler.on_flip_h, add="+")
+        fliph_text.grid(column=1, row=4, padx=0, pady=20, sticky=tk.W)
+
+        # Delete all screens
+        delete_text = tk.Label(
+            parent,
+            text="🗑 Delete all Screens",
+            justify=tk.LEFT,
+            foreground=colors.TEXT_DARKER,
+        )
+        set_hover_style(delete_text)
+
+        # delete_text.bind("<Button-1>", self.handler.on_pre_delete_all, add="+")  # Won't implement yet
+        delete_text.bind("<ButtonRelease-1>", self.handler.on_delete_all, add="+")
+        delete_text.grid(column=1, row=5, padx=0, pady=20, sticky=tk.W)
+
+        # spacer
+        tk.Label(parent, height=1).grid(row=6, columnspan=1)
 
     def bind_transformation_buttons(self):
         raise NotImplementedError()
