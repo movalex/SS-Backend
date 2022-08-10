@@ -71,7 +71,7 @@ class App:
         )
         self.grid = Grid(canvas, margin)
 
-    def initalize_user_interface(self):
+    def initialize_user_interface(self):
         # Resolve API
         self.api = ResolveFusionAPI()
         self.api.add_canvas(*self.grid.canvas.resolution)
@@ -84,8 +84,8 @@ class App:
             max_height=600,
         )
         self.gui.draw_canvas()
-        self.gui.draw_grid()
         self.gui.grid(row=1)
+        self.gui.draw_grid()
 
         # Controller
         self.controller = Controller(self.grid, self.api, self.gui)

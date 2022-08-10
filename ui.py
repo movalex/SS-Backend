@@ -17,13 +17,13 @@ class Rectangle:
     screen_values: dict[str, float | list[float]]
 
     def compute(self) -> Self:
+
+        canvas_width = self.parent.winfo_width()
+        canvas_height = self.parent.winfo_height()
+
         width, height, center, size = self.screen_values.values()
         x, y = center
         y = 1 - y
-        canvas_width, canvas_height = (
-            self.parent.winfo_width(),
-            self.parent.winfo_height(),
-        )
 
         self.x0 = (x - width / 2) * canvas_width
         self.y0 = (y - height / 2) * canvas_height
@@ -41,6 +41,17 @@ class Rectangle:
 
 class HandlerNotAttachedError(Exception):
     pass
+
+
+class Handler(Protocol):
+    def on_pre_delete_screen(self):
+        pass
+
+    def on_cancel_screen_deletion(self):
+        pass
+
+    def on_delete_screen(self):
+        pass
 
 
 class UI(Protocol):
@@ -75,7 +86,7 @@ class ScreenSplitterUI(tk.Canvas):
         self.max_height = max_height
 
         self.grid_blocks: list[int] = None
-        self.handler = None
+        self.handler: Handler = None
 
         self.config(
             background=colors.CANVAS_BG,
@@ -86,9 +97,7 @@ class ScreenSplitterUI(tk.Canvas):
 
     # PROTOCOL METHODS  =======================================================
     def draw_grid(self) -> None:
-        print(
-            f"about to generate grid cells for a {self.ss_grid.canvas.resolution} grid."
-        )
+        self.update()
         grid_cells = GridCell.generate_all(self.ss_grid)
 
         rects: list[Rectangle] = []
@@ -106,11 +115,12 @@ class ScreenSplitterUI(tk.Canvas):
                 activewidth=1,
             )
             rect_ids.append(rect_id)
-        print("just drew grid cells.")
 
         self.grid_blocks = rect_ids
 
     def draw_screen(self, screen_values: dict[str, float | list[float]]) -> int:
+        self.update()
+
         rect = Rectangle(self, screen_values)
         rect_id = rect.compute().draw(
             fill=colors.CANVAS_SCREEN, outline=colors.CANVAS_SCREEN, tag="screen"
@@ -163,6 +173,11 @@ class ScreenSplitterUI(tk.Canvas):
         self.tag_bind(id, "<Button-2> <ButtonRelease-2>", self.handler.on_delete_screen)
 
     # Self drawing funcs
+    def draw_canvas(self) -> None:
+        canvas_width, canvas_height = self.compute_canvas_dimensions()
+        self.config(width=canvas_width, height=canvas_height)
+        self.update()
+
     def compute_canvas_dimensions(self) -> tuple[int]:
         canvas = self.ss_grid.canvas
         aspect_ratio = canvas.aspect_ratio
@@ -178,7 +193,3 @@ class ScreenSplitterUI(tk.Canvas):
             canvas_width = canvas_height * aspect_ratio
 
         return canvas_width, canvas_height
-
-    def draw_canvas(self) -> None:
-        canvas_width, canvas_height = self.compute_canvas_dimensions()
-        self.config(width=canvas_width, height=canvas_height)
