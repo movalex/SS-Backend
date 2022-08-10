@@ -111,12 +111,21 @@ class ResolveFusionAPI:
 
     def delete_screen(self, screen: list[Tool, Tool, Tool]) -> None:
         self.delete_tool_batch(*screen)
+
+        self.merges.remove(screen[0])
+        self.masks.remove(screen[1])
+        self.media_ins.remove(screen[2])
+
         self.refresh_positions()
 
     def delete_all_screens(self) -> None:
         self.delete_tool_batch(*self.masks)
         self.delete_tool_batch(*self.merges)
         self.delete_tool_batch(*self.media_ins)
+
+        self.masks.clear()
+        self.merges.clear()
+        self.media_ins.clear()
 
     # POSITIONING NODES ON FLOW
     def refresh_positions(self):

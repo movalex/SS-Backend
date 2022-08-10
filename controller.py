@@ -130,12 +130,15 @@ class Controller:
         self.screens.remove(screen)
 
     def delete_all_screens(self):
+        if not self.screens:
+            return
+
         rects = []
         for screen_dict in self.screens:
-            screen = screen_dict["screen"]
+            screen = screen_dict.screen
             self.grid.screens.remove(screen)
 
-            rect = screen_dict["rectangle"]
+            rect = screen_dict.rectangle
             rects.append(rect)
 
         self.ui.undraw_screens(*rects)
