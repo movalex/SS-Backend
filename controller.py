@@ -34,7 +34,7 @@ class Controller:
                 "setter": self.grid.canvas.set_height,
             },
             "margin": {
-                "getter": self.grid.margin.get_top,  # When margins are linked, they'll all
+                "getter": self.grid.margin.get_all,  # When margins are linked, they'll all
                 "setter": self.grid.margin.set_all,  # automatically be the same.
             },
             "top": {

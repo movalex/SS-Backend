@@ -268,6 +268,11 @@ class Margin:
     def set_all(self, value: int) -> None:
         self.all = value
 
+    def get_all(self) -> int | None:
+        if self.get_top() == self.get_left() == self.get_bottom() == self.get_right():
+            return self.get_top()
+        return None
+
     def get_top(self) -> int:
         """Returns top in pixels."""
         return self._top_px

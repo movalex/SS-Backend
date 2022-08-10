@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from random import random
 from .handler import EventHandler
 from .style import colors
 import tkinter as tk
@@ -99,11 +98,9 @@ class Interface:
 
         top_var, top_label, top_entry = self.user_settings["top"]
 
-        # Calls the event for the first time to update all margins, then bind the entry.
-        self.handler.on_change_setting(event=None, key="margin", var=top_var)
-        call = lambda e: self.handler.on_change_setting(
-            event=e, key="margin", var=top_var
-        )
+        # Calls the event for the first time to update all margins, then binds the entry.
+
+        call = lambda e: self.handler.on_change_setting(key="margin", var=top_var)
 
         top_label.configure(text="Margin")
 
@@ -117,6 +114,10 @@ class Interface:
         top_entry.bind("<FocusOut>", call)
         top_entry.bind("<KP_Enter>", call)
 
+        top_entry.bind("<Return>", self.sync_vars_to_top, add="+")
+        top_entry.bind("<FocusOut>", self.sync_vars_to_top, add="+")
+        top_entry.bind("<KP_Enter>", self.sync_vars_to_top, add="+")
+
         # Disables left, bottom and right margin Entries and darkens Label text.
         lbr_vars: dict[str, tk.IntVar] = {
             key: self.user_settings[key][0] for key in ("left", "bottom", "right")
@@ -128,10 +129,8 @@ class Interface:
             key: self.user_settings[key][2] for key in ("left", "bottom", "right")
         }
 
-        for var, entry, label in zip(
-            lbr_vars.values(), lbr_entries.values(), lbr_labels.values()
-        ):
-            var.set(top_var.get())
+        self.sync_vars_to_top()
+        for entry, label in zip(lbr_entries.values(), lbr_labels.values()):
             entry.configure(state="disabled")
             label.configure(foreground=colors.TEXT_DARKER)
 
@@ -139,6 +138,8 @@ class Interface:
         link_margins_button: tk.Label = event.widget
         link_margins_button.unbind("<Button-1>")
         link_margins_button.bind("<Button-1>", self.on_unlink_margins)
+
+        self.handler.on_change_setting(key="margin", var=top_var)
 
     def on_unlink_margins(self, event: tk.Event):
         # Enables left, bottom and right margin Entries and lightens Label text.
@@ -160,7 +161,7 @@ class Interface:
 
         # Rebind Top Entry to only change Top
         top_var, top_label, top_entry = self.user_settings["top"]
-        call = lambda e: self.handler.on_change_setting(event=e, key="top", var=top_var)
+        call = lambda e: self.handler.on_change_setting(key="top", var=top_var)
 
         top_label.configure(text="Top")
 
@@ -171,6 +172,16 @@ class Interface:
         top_entry.bind("<Return>", call)
         top_entry.bind("<FocusOut>", call)
         top_entry.bind("<KP_Enter>", call)
+
+    def sync_vars_to_top(self, event: tk.Event = None):
+        top = self.user_settings["top"][0].get()
+        vars = [
+            self.user_settings[key][0]
+            for key in self.user_settings
+            if key in ("left", "bottom", "right")
+        ]
+        for var in vars:
+            var.set(top)
 
     # Transformation buttons ==================================================
     def make_transformation_buttons(self):
