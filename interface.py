@@ -2,6 +2,15 @@ from dataclasses import dataclass
 from .handler import EventHandler
 from .style import colors
 import tkinter as tk
+from . import DEFAULTS
+
+
+@dataclass
+class UserSetting:
+    key: str
+    var: tk.IntVar
+    label: tk.Label
+    entry: tk.Entry = None
 
 
 @dataclass
@@ -11,12 +20,11 @@ class Interface:
     handler: EventHandler
 
     # Entries on Left Button Frame ============================================
-    def make_left_frame_entries(
-        self, defaults: dict[str, int], parent: tk.Frame
-    ) -> None:
-        # creates dict with vars and labels
-        user_settings: dict[str, list[tk.IntVar | tk.Label | tk.Entry]] = {
-            key: [
+    def make_left_frame_entries(self, parent: tk.Frame) -> None:
+        # Creates user settings object from defaults
+        user_settings: list[UserSetting] = [
+            UserSetting(
+                key,
                 tk.IntVar(value=value),
                 tk.Label(
                     parent,
@@ -29,53 +37,48 @@ class Interface:
                     justify=tk.LEFT,
                     padx=20,
                 ),
-            ]
-            for key, value in defaults.items()
-        }
+            )
+            for key, value in DEFAULTS.items()
+        ]
 
-        # creates entries with vars attached
-        for value in user_settings.values():
-            value.append(
-                tk.Entry(
-                    parent,
-                    textvariable=value[0],
-                    width=8,
-                    justify=tk.CENTER,
-                    foreground=colors.TEXT,
-                    bd=0,
-                    relief="flat",
-                    bg=colors.ENTRY_BG,
-                    highlightthickness=1,
-                    highlightbackground=colors.CANVAS_BG,
-                    highlightcolor=colors.CANVAS_BG,
-                    disabledbackground=colors.CANVAS_BLOCK,
-                )
+        # Creates entries with vars attached
+        for setting in user_settings:
+            setting.entry = tk.Entry(
+                parent,
+                textvariable=setting.var,
+                width=8,
+                justify=tk.CENTER,
+                foreground=colors.TEXT,
+                bd=0,
+                relief="flat",
+                bg=colors.ENTRY_BG,
+                highlightthickness=1,
+                highlightbackground=colors.CANVAS_BG,
+                highlightcolor=colors.CANVAS_BG,
+                disabledbackground=colors.CANVAS_BLOCK,
             )
 
-        self.user_settings = user_settings
+        self.user_settings = {setting.key: setting for setting in user_settings}
 
     def bind_left_frame_entries(self) -> None:
         def call(key, value):
             return lambda e: self.handler.on_change_setting(key, value)
 
         # Binds entries to set_property method.
-        for key, value in self.user_settings.items():
-            var: tk.IntVar = value[0]
-            entry: tk.Entry = value[2]
+        for setting in self.user_settings.values():
+            this_call = call(setting.key, setting.var)
 
-            this_call = call(key, var)
-
-            entry.bind("<Return>", this_call)
-            entry.bind("<FocusOut>", this_call)
-            entry.bind("<KP_Enter>", this_call)
+            setting.entry.bind("<Return>", this_call)
+            setting.entry.bind("<FocusOut>", this_call)
+            setting.entry.bind("<KP_Enter>", this_call)
 
     def grid_entries(self, parent: tk.Frame):
         i = 1
-        for key, group in self.user_settings.items():
-            label, entry = group[1], group[2]
-            label.grid(column=3, row=i, padx=0, pady=10, sticky=tk.W)
-            entry.grid(column=4, row=i, padx=10, ipady=5)
-            if key in ("height", "gutter"):
+        for setting in self.user_settings.values():
+            setting.label.grid(column=3, row=i, padx=0, pady=10, sticky=tk.W)
+            setting.entry.grid(column=4, row=i, padx=10, ipady=5)
+
+            if setting.key in ("height", "gutter"):
                 i += 1
 
                 # Adds spacer.
@@ -96,41 +99,35 @@ class Interface:
     ) -> None:  # Still problematic because a change in top entry won't update the rest now.
         """Transforms Top Entry into a control for all margins at once, disables other margin controls"""
 
-        top_var, top_label, top_entry = self.user_settings["top"]
+        top, left = self.user_settings["top"], self.user_settings["left"]
+        bottom, right = self.user_settings["bottom"], self.user_settings["right"]
 
         # Calls the event for the first time to update all margins, then binds the entry.
 
-        call = lambda e: self.handler.on_change_setting(key="margin", var=top_var)
+        call = lambda e: self.handler.on_change_setting(key="margin", var=top.var)
 
-        top_label.configure(text="Margin")
+        top.label.configure(text="Margin")
 
         # Unbinds margin top entry.
-        top_entry.unbind("<Return>")
-        top_entry.unbind("<FocusOut>")
-        top_entry.unbind("<KP_Enter>")
+        top.entry.unbind("<Return>")
+        top.entry.unbind("<FocusOut>")
+        top.entry.unbind("<KP_Enter>")
 
         # Rebinds it to change everything.
-        top_entry.bind("<Return>", call)
-        top_entry.bind("<FocusOut>", call)
-        top_entry.bind("<KP_Enter>", call)
+        top.entry.bind("<Return>", call)
+        top.entry.bind("<FocusOut>", call)
+        top.entry.bind("<KP_Enter>", call)
 
-        top_entry.bind("<Return>", self.sync_vars_to_top, add="+")
-        top_entry.bind("<FocusOut>", self.sync_vars_to_top, add="+")
-        top_entry.bind("<KP_Enter>", self.sync_vars_to_top, add="+")
+        top.entry.bind("<Return>", self.sync_vars_to_top, add="+")
+        top.entry.bind("<FocusOut>", self.sync_vars_to_top, add="+")
+        top.entry.bind("<KP_Enter>", self.sync_vars_to_top, add="+")
 
         # Disables left, bottom and right margin Entries and darkens Label text.
-        lbr_vars: dict[str, tk.IntVar] = {
-            key: self.user_settings[key][0] for key in ("left", "bottom", "right")
-        }
-        lbr_labels: dict[str, tk.Label] = {
-            key: self.user_settings[key][1] for key in ("left", "bottom", "right")
-        }
-        lbr_entries: dict[str, tk.Entry] = {
-            key: self.user_settings[key][2] for key in ("left", "bottom", "right")
-        }
+        lbr_labels = [_.label for _ in (left, bottom, right)]
+        lbr_entries = [_.entry for _ in (left, bottom, right)]
 
         self.sync_vars_to_top()
-        for entry, label in zip(lbr_entries.values(), lbr_labels.values()):
+        for entry, label in zip(lbr_entries, lbr_labels):
             entry.configure(state="disabled")
             label.configure(foreground=colors.TEXT_DARKER)
 
@@ -139,18 +136,17 @@ class Interface:
         link_margins_button.unbind("<Button-1>")
         link_margins_button.bind("<Button-1>", self.on_unlink_margins)
 
-        self.handler.on_change_setting(key="margin", var=top_var)
+        self.handler.on_change_setting(key="margin", var=top.var)
 
     def on_unlink_margins(self, event: tk.Event):
         # Enables left, bottom and right margin Entries and lightens Label text.
-        lbr_labels: dict[str, tk.Label] = {
-            key: self.user_settings[key][1] for key in ("left", "bottom", "right")
-        }
-        lbr_entries: dict[str, tk.Entry] = {
-            key: self.user_settings[key][2] for key in ("left", "bottom", "right")
-        }
+        top, left = self.user_settings["top"], self.user_settings["left"]
+        bottom, right = self.user_settings["bottom"], self.user_settings["right"]
 
-        for entry, label in zip(lbr_entries.values(), lbr_labels.values()):
+        lbr_labels = [_.label for _ in (left, bottom, right)]
+        lbr_entries = [_.entry for _ in (left, bottom, right)]
+
+        for entry, label in zip(lbr_entries, lbr_labels):
             entry.configure(state=tk.NORMAL)
             label.configure(foreground=colors.TEXT)
 
@@ -160,28 +156,27 @@ class Interface:
         link_margins_button.bind("<Button-1>", self.on_link_margins)
 
         # Rebind Top Entry to only change Top
-        top_var, top_label, top_entry = self.user_settings["top"]
-        call = lambda e: self.handler.on_change_setting(key="top", var=top_var)
+        call = lambda e: self.handler.on_change_setting(key="top", var=top.var)
 
-        top_label.configure(text="Top")
+        top.label.configure(text="Top")
 
-        top_entry.unbind("<Return>")
-        top_entry.unbind("<FocusOut>")
-        top_entry.unbind("<KP_Enter>")
+        top.entry.unbind("<Return>")
+        top.entry.unbind("<FocusOut>")
+        top.entry.unbind("<KP_Enter>")
 
-        top_entry.bind("<Return>", call)
-        top_entry.bind("<FocusOut>", call)
-        top_entry.bind("<KP_Enter>", call)
+        top.entry.bind("<Return>", call)
+        top.entry.bind("<FocusOut>", call)
+        top.entry.bind("<KP_Enter>", call)
 
     def sync_vars_to_top(self, event: tk.Event = None):
-        top = self.user_settings["top"][0].get()
+        top_value = self.user_settings["top"].var.get()
         vars = [
-            self.user_settings[key][0]
-            for key in self.user_settings
-            if key in ("left", "bottom", "right")
+            setting.var
+            for setting in self.user_settings.values()
+            if setting.key in ["left", "bottom", "right"]
         ]
         for var in vars:
-            var.set(top)
+            var.set(top_value)
 
     # Transformation buttons ==================================================
     def make_transformation_buttons(self):

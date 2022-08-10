@@ -95,7 +95,7 @@ class App:
 
         # Interface
         self.interface = Interface(self.handler)
-        self.interface.make_left_frame_entries(DEFAULTS, self.frame_left_entries)
+        self.interface.make_left_frame_entries(self.frame_left_entries)
         self.interface.bind_left_frame_entries()
         self.interface.grid_entries(self.frame_left_entries)
         self.interface.make_link_margins_button(self.frame_left_entries)
