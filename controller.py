@@ -22,7 +22,7 @@ class Controller:
         self.resolve_api = resolve_api
         self.ui = ui
 
-        self.screens: dict[int, dict[str, Screen | tuple[Tool, Tool, Tool] | int]] = {}
+        self.screens: list[ScreenDict] = []
 
         self.commands: dict[str, dict[str, function]] = {
             "width": {
@@ -101,32 +101,30 @@ class Controller:
 
     # Screen Manipulation  ====================================================
     def add_screen(self, coords: tuple[int, int]):
-        new_key = find_first_missing(self.screens.keys())
+        if self.screens:
+            id = find_first_missing([screen.id for screen in self.screens])
+        else:
+            id = 0
 
         screen = Screen.create_from_coords(self.grid, *coords)
         tools: tuple[Tool, Tool, Tool] = self.resolve_api.add_screen(screen.values)
-        rect = self.ui.draw_screen(screen.values)
+        rectangle = self.ui.draw_screen(screen.values)
 
-        new_screen_dict = {"screen": screen, "tools": tools, "rectangle": rect}
+        screen_dict = ScreenDict(id, screen, tools, rectangle)
 
-        self.screens[new_key] = new_screen_dict
+        self.screens.append(screen_dict)
 
-    def find_screen_by_rect_id(self, rect_id) -> int:
-        return [
-            id
-            for id, screen_dict in self.screens.items()
-            if screen_dict["rectangle"] == rect_id
-        ][0]
+    def find_screen_by_rect_id(self, rect_id) -> ScreenDict:
+        return [screen for screen in self.screens if screen.rectangle == rect_id][0]
 
     def delete_screen(self, rect_id: int):
-        id = self.find_screen_by_rect_id(rect_id)
-        screen, tools, rect = self.screens[id].values()
+        screen = self.find_screen_by_rect_id(rect_id)
 
-        self.grid.screens.remove(screen)
-        self.resolve_api.delete_screen(tools)
-        self.ui.undraw_screens(rect)
+        self.grid.screens.remove(screen.screen)
+        self.resolve_api.delete_screen(screen.tools)
+        self.ui.undraw_screens(screen.rectangle)
 
-        self.screens[id] = None
+        self.screens.remove(screen)
 
     def delete_all_screens(self):
         rects = []
@@ -151,18 +149,18 @@ class Controller:
         ...
 
     # Changes in self  ========================================================
-    def update_screen_rect_ids(self, ids: list[int] | None) -> None:
+    def update_screen_rect_ids(self, rect_ids: list[int] | None) -> None:
         """When screens are redrawn by the UI, their rectangle ids change."""
-        if ids is None:  # Means there are still no screens.
+        if rect_ids is None:  # Means there are still no screens.
             return
 
-        for screen_dict, id in zip(self.screens.values(), ids):
-            screen_dict["rectangle"] = id
+        for screen_dict, id in zip(self.screens, rect_ids, strict=True):
+            screen_dict.rectangle = id
 
     # Useful Properties  ======================================================
     @property
     def screen_values(self) -> list[dict[str, float]]:
-        return [screen_dict["screen"].values for screen_dict in self.screens.values()]
+        return [screen_dict.screen.values for screen_dict in self.screens]
 
     @property
     def canvas_resolution(self) -> tuple[int, int]:
@@ -171,6 +169,5 @@ class Controller:
     @property
     def screen_tools(self) -> list[tuple[Tool, Tool]]:
         return [
-            (screen_dict["tools"][0], screen_dict["tools"][1])
-            for screen_dict in self.screens.values()
+            (screen_dict.tools[0], screen_dict.tools[1]) for screen_dict in self.screens
         ]

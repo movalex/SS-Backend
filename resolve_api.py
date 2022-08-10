@@ -109,7 +109,7 @@ class ResolveFusionAPI:
 
         return merge, mask, media_in
 
-    def delete_screen(self, screen: tuple[Tool, Tool, Tool]) -> None:
+    def delete_screen(self, screen: list[Tool, Tool, Tool]) -> None:
         self.delete_tool_batch(*screen)
         self.refresh_positions()
 
