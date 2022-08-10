@@ -11,7 +11,7 @@ def initialize_fake_fusion():
 
 
 try:
-    fusion
+    comp
 except NameError:
     initialize_fake_fusion()
 
