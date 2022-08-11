@@ -1,3 +1,4 @@
+# Helper function for Controller and Fusion API classes.
 def find_first_missing(list: list[int]) -> int:
     for index, value in enumerate(sorted(list)):
         if index == value:
@@ -10,15 +11,27 @@ def find_first_missing(list: list[int]) -> int:
     return first_missing
 
 
-def append_first_missing(list: list[int]) -> None:
-    missing = find_first_missing(list)
-    list.append(missing)
+# Helper function for Screen and Grid classes.
+def get_coords(item, matrix: list[list]) -> tuple[int, int]:
+    for i, v in enumerate(matrix):
+        if item in v:
+            y = i
+            x = v.index(item)
+    return x + 1, y + 1
+
+
+def is_within(coords: tuple[float, float], area: dict[tuple[float, float]]) -> bool:
+    x, y = coords[0], coords[1]
+    if x <= area["top_left"][0]:
+        return False
+    if x >= area["top_right"][0]:
+        return False
+    if y >= area["top_left"][1]:
+        return False
+    if y <= area["bottom_left"][1]:
+        return False
+    return True
 
 
 if __name__ == "__main__":
-    test = [0, 1, 2, 3, 5, 4, 7, 8]
-    print(find_first_missing(test))  # Should print 6.
-
-    append_first_missing(test)
-
-    print(find_first_missing(test))  # Should print 9.
+    pass

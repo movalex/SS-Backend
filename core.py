@@ -1,13 +1,5 @@
 from __future__ import annotations
-
-
-# helper function for Screen and Grid classes
-def get_coords(item, matrix: list[list]) -> tuple[int, int]:
-    for i, v in enumerate(matrix):
-        if item in v:
-            y = i
-            x = v.index(item)
-    return x + 1, y + 1
+from .utils import get_coords
 
 
 class Canvas:

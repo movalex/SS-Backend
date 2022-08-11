@@ -4,19 +4,7 @@ import tkinter as tk
 from .gui import GUI, Rectangle
 from .style import colors
 from .controller import Controller
-
-
-def is_within(coords: tuple[float, float], area: dict[tuple[float, float]]) -> bool:
-    x, y = coords[0], coords[1]
-    if x <= area["top_left"][0]:
-        return False
-    if x >= area["top_right"][0]:
-        return False
-    if y >= area["top_left"][1]:
-        return False
-    if y <= area["bottom_left"][1]:
-        return False
-    return True
+from .utils import is_within
 
 
 def find_grid_block_within(
