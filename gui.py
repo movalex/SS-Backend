@@ -23,11 +23,11 @@ class Rectangle:
         canvas_height = self.parent.winfo_height()
 
         self.width, self.height, center, size = self.screen_values.values()
-        self.x, y = center
-        self.y = 1 - y
+        self.x, self.y = center
+        y = 1 - self.y
 
         self.x0 = (self.x - self.width / 2) * canvas_width
-        self.y0 = (self.y - self.height / 2) * canvas_height
+        self.y0 = (y - self.height / 2) * canvas_height
         self.x1 = self.x0 + self.width * canvas_width
         self.y1 = self.y0 + self.height * canvas_height
 
@@ -41,11 +41,13 @@ class Rectangle:
 
     @property
     def corners(self) -> dict[tuple]:
-        y = 1 - self.y
-        top_left = (self.x - self.width / 2, y + self.height / 2)
-        top_right = (self.x + self.width / 2, y + self.height / 2)
-        bottom_left = (self.x - self.width / 2, y - self.height / 2)
-        bottom_right = (self.x + self.width / 2, y - self.height / 2)
+        x, y = self.x, self.y
+        width, height = self.width, self.height
+
+        top_left = (x - width / 2, y + height / 2)
+        top_right = (x + width / 2, y + height / 2)
+        bottom_left = (x - width / 2, y - height / 2)
+        bottom_right = (x + width / 2, y - height / 2)
 
         corners = {
             "top_left": top_left,
