@@ -34,8 +34,8 @@ class Controller:
                 "setter": self.grid.canvas.set_height,
             },
             "margin": {
-                "getter": self.grid.margin.get_all,  # When margins are linked, they'll all
-                "setter": self.grid.margin.set_all,  # automatically be the same.
+                "getter": self.grid.margin.get_all,
+                "setter": self.grid.margin.set_all,
             },
             "top": {
                 "getter": self.grid.margin.get_top,
@@ -143,7 +143,7 @@ class Controller:
 
         self.gui.undraw_screens(*rects)
 
-        self.resolve_api.delete_all_screens()  # Fusion automatically keeps track
+        self.resolve_api.delete_all_screens()
 
         self.screens.clear()
 

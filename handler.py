@@ -5,6 +5,7 @@ from .gui import GUI, Rectangle
 from .style import colors
 from .controller import Controller
 from .utils import is_within
+from . import instructions
 
 
 def find_grid_block_within(
@@ -35,6 +36,7 @@ class EventHandler:
         self.new_screen_indexes: tuple[int, int] = None
         self.gui.bind("<Button-1>", self.on_click_canvas, add="+")
         self.gui.bind("<ButtonRelease-1>", self.on_release_canvas, add="+")
+        self.status = tk.StringVar()
 
     def on_change_setting(self=None, key: str = None, var: tk.IntVar = None) -> None:
         self.controller.change_setting(key, var.get())
@@ -58,6 +60,8 @@ class EventHandler:
             return
         self.new_screen_indexes = None
 
+    created_first_screen = False
+
     def on_release_canvas(self, event: tk.Event) -> None:
         if self.new_screen_coords is None:
             return
@@ -73,6 +77,11 @@ class EventHandler:
             index = block.index
             self.new_screen_indexes = (self.new_screen_indexes, index)
             self.controller.do_command("add_screen", self.new_screen_indexes)
+
+            if not self.created_first_screen:
+                self.status.set(instructions.DELETE_SCREEN)
+                self.created_first_screen = True
+
             return
 
         self.new_screen_indexes = None
@@ -81,6 +90,8 @@ class EventHandler:
     user_wants_to_delete: bool = True
 
     def on_pre_delete_screen(self, event: tk.Event) -> None:
+        if self.status.get() == instructions.DELETE_SCREEN:
+            self.status.set("")
         canvas: tk.Canvas = event.widget
         rect_id = canvas.find_closest(event.x, event.y)[0]
         canvas.itemconfig(
@@ -127,3 +138,12 @@ class EventHandler:
 
     def on_delete_all(self, event: tk.Event) -> None:
         self.controller.do_command("delete_all_screens")
+
+    # Status bar
+    def announce(self, event: tk.Event, message: str) -> None:
+        self.status.set(message)
+
+    def clear_status_bar(self, event: tk.Event, after: int = 500) -> None:
+        var = self.status
+        func = lambda txt="": var.set(txt)
+        event.widget.after(after, func)
