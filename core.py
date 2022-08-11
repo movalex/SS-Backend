@@ -1,11 +1,11 @@
-from __future__ import annotations
+from typing import Callable
 from .utils import get_coords
 
 
 class Canvas:
     """Canvas object. Sizes defined and returned in pixels."""
 
-    _children: list[function] = []
+    _children: list[Callable] = []
 
     def __init__(self, resolution: tuple[int, int] = (1920, 1080)):
         self._width_px, self._height_px = resolution
@@ -15,7 +15,7 @@ class Canvas:
         message = f"Width: {self.width}px\tHeight: {self.height}px\n"
         return title + message
 
-    def give_birth(self, function: function) -> None:
+    def give_birth(self, function: Callable) -> None:
         self._children.append(function)
 
     @property
@@ -67,7 +67,7 @@ class Canvas:
 class Margin:
     """Margin object. Values defined in pixels but returned normalized."""
 
-    _children: list[function] = []
+    _children: list[Callable] = []
 
     def __init__(
         self,
@@ -103,7 +103,7 @@ class Margin:
         message = f"Top: {self._top_px}px\tBottom: {self._right_px}px\tGutter: {self._gutter_px}px\nLeft: {self._left_px}px\tRight: {self._right_px}px\n"
         return title + message
 
-    def give_birth(self, function: function) -> None:
+    def give_birth(self, function: Callable) -> None:
         self._children.append(function)
 
     # THE COMPUTER ========================================
@@ -257,7 +257,7 @@ class Grid:
         self.margin = margin
         self._cols, self._rows = layout
 
-        self._children: list[function] = None
+        self._children: list[Callable] = None
         self._matrix: list[list[int]] = None
 
         self._screens: list[Screen] = None
@@ -297,17 +297,17 @@ class Grid:
             child()
 
     # OBSERVER METHODS ========================================
-    def give_birth(self, function: function) -> None:
+    def give_birth(self, function: Callable) -> None:
         if self._children is None:
             self._children = []
         self._children.append(function)
 
-    def append_screen(self, screen: Screen) -> None:
+    def append_screen(self, screen) -> None:
         if self._screens is None:
             self._screens = []
         self._screens.append(screen)
 
-    def append_cell(self, cell: GridCell) -> None:
+    def append_cell(self, cell) -> None:
         if self._cells is None:
             self._cells = []
         self._cells.append(cell)
@@ -392,11 +392,11 @@ class Grid:
 
     # LISTS ==============================
     @property
-    def screens(self) -> list[Screen]:
+    def screens(self) -> list:
         return self._screens
 
     @property
-    def cells(self) -> list[GridCell]:
+    def cells(self) -> list:
         return self._cells
 
     # Setters and Getters for Controller use
@@ -420,7 +420,7 @@ class Screen:
 
     def __init__(
         self, grid: Grid, colspan: int, rowspan: int, col: int, row: int
-    ) -> Screen:
+    ) -> None:
         self.grid = grid
 
         self._colspan = colspan
@@ -443,7 +443,7 @@ class Screen:
         self.grid.screens.remove(self)
 
     @classmethod
-    def create_from_coords(cls: Screen, grid: Grid, point1: int, point2: int) -> Screen:
+    def create_from_coords(cls, grid: Grid, point1: int, point2: int):
         matrix = grid.matrix
 
         p1 = get_coords(point1, matrix)
@@ -600,7 +600,7 @@ class GridCell(Screen):
         self.grid.append_cell(self)
 
     @classmethod
-    def generate_all(cls, grid: Grid) -> list[GridCell]:
+    def generate_all(cls, grid: Grid) -> list:
         if cls.all_blocks is None:
             cls.all_blocks = []
         else:

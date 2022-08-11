@@ -1,4 +1,3 @@
-from __future__ import annotations
 from dataclasses import dataclass
 import tkinter as tk
 from .gui import GUI, Rectangle

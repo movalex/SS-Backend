@@ -1,6 +1,4 @@
-from __future__ import annotations
 from typing import Protocol
-from typing_extensions import Self
 from .core import Grid, GridCell
 from dataclasses import dataclass
 import tkinter as tk
@@ -17,7 +15,7 @@ class Rectangle:
     screen_values: dict[str, float | list[float]]
     index: int = None
 
-    def compute(self) -> Self:
+    def compute(self):
 
         canvas_width = self.parent.winfo_width()
         canvas_height = self.parent.winfo_height()

@@ -1,5 +1,5 @@
-from __future__ import annotations
 from dataclasses import dataclass
+from typing import Callable
 from .handler import EventHandler
 from .style import colors
 import tkinter as tk
@@ -15,7 +15,7 @@ class UserSetting:
 
 
 def bind_batch(
-    widget: tk.Widget, events: list[str], func: function, add: str = None
+    widget: tk.Widget, events: list[str], func: Callable, add: str = None
 ) -> None:
     for event in events:
         widget.bind(event, func, add=add)

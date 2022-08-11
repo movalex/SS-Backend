@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 # resolve
 class Resolve:
     def __init__(self) -> None:
@@ -31,7 +29,7 @@ class Tool:
             self._attrs[key] = value
             print(f"Setting {key} to {value}")
 
-    def SetInput(self, input_name: str, value: float | str | int | Tool) -> None:
+    def SetInput(self, input_name: str, value: float | str | int) -> None:
         self._inputs[input_name] = value
         print(f"Setting {self} {input_name} to {value}")
 
@@ -48,7 +46,7 @@ class Comp:
         return Tool(tool_id)
 
     @property
-    def CurrentFrame(self) -> CurrentFrame:
+    def CurrentFrame(self):
         return CurrentFrame()
 
 
