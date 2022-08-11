@@ -117,7 +117,7 @@ class UserInput:
     def make_link_margins_button(self, parent: tk.Frame):
         link_margins = tk.Label(parent, text="🔗", foreground=colors.TEXT_DARKER)
         link_margins.bind("<Button-1>", self.on_link_margins, add="+")
-        link_margins.grid(column=2, row=5, rowspan=2, sticky=tk.W, padx=4)
+        link_margins.grid(column=2, row=5, rowspan=2, sticky=tk.E, ipadx=4)
         self.link_margins_button = link_margins
 
     def on_link_margins(self, event: tk.Event) -> None:
