@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union
 from .utils import get_coords
 
 
@@ -221,7 +221,7 @@ class Margin:
     def set_all(self, value: int) -> None:
         self.all = value
 
-    def get_all(self) -> int | None:
+    def get_all(self) -> Union[int, None]:
         if self.get_top() == self.get_left() == self.get_bottom() == self.get_right():
             return self.get_top()
         return None

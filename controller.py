@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Union
 from .core import Grid, Screen
 from .fusion_alias import Tool
 from .resolve_api import ResolveAPI
@@ -72,7 +73,7 @@ class Controller:
             "delete_all_screens": self.delete_all_screens,
         }
 
-    def do_command(self, key: str, value: int | None = None) -> None:
+    def do_command(self, key: str, value: Union[int, None] = None) -> None:
         command = self.commands[key]
         if value:
             command(value)
@@ -161,7 +162,7 @@ class Controller:
         self.refresh_ui()
 
     # Changes in self  ========================================================
-    def update_screen_rect_ids(self, rect_ids: list[int] | None) -> None:
+    def update_screen_rect_ids(self, rect_ids: Union[list[int], None]) -> None:
         """When screens are redrawn by the UI, their rectangle ids change."""
         if rect_ids is None:  # Means there are still no screens.
             return
